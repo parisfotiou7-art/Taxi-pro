@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>TaxiPro Manager</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #181b22;
+      --card-2: #222631;
+      --text: #f4f6f9;
+      --muted: #9aa3b2;
+      --accent: #facc15;
+      --accent-dark: #eab308;
+      --accent-text: #111111;
+      --green: #22c55e;
+      --red: #ef4444;
+      --border: #2c313d;
+      --shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    body.light {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --card-2: #f9fafb;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #facc15;
+      --accent-dark: #eab308;
+      --accent-text: #111111;
+      --green: #16a34a;
+      --red: #dc2626;
+      --border: #e5e7eb;
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 84px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+    .brand-badge {
+      background: var(--accent);
+      color: var(--accent-text);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 900;
+      font-size: 14px;
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    select.year-select, button.icon-btn {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 10px;
+      box-shadow: var(--shadow);
+    }
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .kpi-val {
+      font-size: 17px;
+      font-weight: 800;
+    }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .accent { color: var(--accent); }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    .btn-expense {
+      background: var(--card);
+      color: var(--red);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin: 18px 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+    .tx-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .tx-item:first-child { padding-top: 0; }
+    .tx-main { font-weight: 700; font-size: 14px; }
+    .tx-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .tx-right { text-align: right; white-space: nowrap; }
+    .tx-amount { font-weight: 800; font-size: 15px; }
+    .tx-actions { margin-top: 4px; display: flex; gap: 6px; justify-content: flex-end; }
+    .mini-btn {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .month-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .month-card:hover { border-color: var(--accent); }
+    .month-name { font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+    .month-row { display: flex; justify-content: space-between; font-size: 12px; margin-top: 2px; }
+    .search-box, .input-field {
+      width: 100%;
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+    }
+    .pill {
+      background: var(--card);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pill.active {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 120px;
+      gap: 4px;
+      padding-top: 12px;
+    }
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar-pair {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      width: 100%;
+      justify-content: center;
+      height: 92px;
+    }
+    .bar {
+      width: 6px;
+      border-radius: 3px 3px 0 0;
+      min-height: 2px;
+    }
+    .bar.inc { background: var(--green); }
+    .bar.exp { background: var(--red); }
+    .bar-lbl { font-size: 9px; color: var(--muted); margin-top: 4px; }
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 4px 10px;
+      z-index: 30;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .nav-btn span.ico { font-size: 18px; }
+    .nav-btn.active { color: var(--accent); }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 16px 28px;
+      border-top: 1px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    label.field-lbl {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .badge-count {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-badge">TAXI</span>
+      <span>TaxiPro</span>
+    </div>
+    <div class="header-controls">
+      <select id="yearSelect" class="year-select" aria-label="Επιλογή Έτους"></select>
+      <button id="themeToggle" class="icon-btn" title="Αλλαγή θέματος">☀️</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-home" class="view active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Έσοδα (<span class="yr-lbl"></span>)</div>
+          <div class="kpi-val green" id="kpiIncome">0,00 €</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Έξοδα (<span class="yr-lbl"></span>)</div>
+          <div class="kpi-val red" id="kpiExpense">0,00 €</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Καθαρό Κέρδος</div>
+          <div class="kpi-val accent" id="kpiProfit">0,00 €</div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="btn btn-primary" onclick="openModal('income')">+ Νέο Δρομολόγιο</button>
+        <button class="btn btn-expense" onclick="openModal('expense')">- Νέο Έξοδο</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <strong style="font-size:13px;">Μηνιαία Εικόνα (<span class="yr-lbl"></span>)</strong>
+          <span style="font-size:11px;color:var(--muted);">🟢 Έσοδα / 🔴 Έξοδα</span>
+        </div>
+        <div class="chart-bars" id="yearChart"></div>
+      </div>
+
+      <div class="section-title">
+        <span>Πρόσφατες Κινήσεις</span>
+        <button class="mini-btn" onclick="switchView('history')">Όλες →</button>
+      </div>
+      <div class="card" id="recentList"></div>
+    </section>
+
+    <section id="view-months" class="view">
+      <div class="section-title">
+        <span>Οικονομικά ανά Μήνα (<span class="yr-lbl"></span>)</span>
+      </div>
+      <div class="months-grid" id="monthsGrid"></div>
+    </section>
+
+    <section id="view-history" class="view">
+      <div class="section-title"><span>Αναζήτηση & Ιστορικό Κινήσεων</span></div>
+      <input type="search" id="searchInput" class="search-box" placeholder="Αναζήτηση πελάτη, προορισμού, σημειώσεων ή ποσού..." oninput="renderHistory()" />
+      <div class="filter-row">
+        <button class="pill active" data-type="all" onclick="setTypeFilter('all', this)">Όλα</button>
+        <button class="pill" data-type="income" onclick="setTypeFilter('income', this)">Έσοδα</button>
+        <button class="pill" data-type="expense" onclick="setTypeFilter('expense', this)">Έξοδα</button>
+        <select id="monthFilter" class="year-select" style="padding:5px 10px;font-size:12px;" onchange="renderHistory()">
+          <option value="all">Όλοι οι μήνες</option>
+        </select>
+      </div>
+      <div class="card" id="historyList"></div>
+    </section>
+
+    <section id="view-customers" class="view">
+      <div class="section-title"><span>Ιστορικό Πελατών</span></div>
+      <input type="search" id="customerSearch" class="search-box" placeholder="Αναζήτηση πελάτη..." oninput="renderCustomers()" />
+      <div id="customersList"></div>
+    </section>
+
+    <section id="view-more" class="view">
+      <div class="section-title"><span>Συχνότητα Προορισμών</span></div>
+      <input type="search" id="destSearch" class="search-box" placeholder="Αναζήτηση προορισμού..." oninput="renderDestinations()" />
+      <div class="card" id="destinationsList"></div>
+
+      <div class="section-title"><span>Αντίγραφα Ασφαλείας & Εξαγωγή</span></div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--muted);margin-top:0;">
+          Όλα τα δεδομένα αποθηκεύονται αυτόματα στη μνήμη της συσκευής σου. Κράτα τακτικά αντίγραφο ασφαλείας.
+        </p>
+        <div style="display:grid;gap:10px;">
+          <button class="btn btn-primary" onclick="exportJSON()">⬇️ Λήψη Αντιγράφου Ασφαλείας (.json)</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ Επαναφορά από Αντίγραφο (.json)</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+          <button class="btn btn-secondary" onclick="exportCSV()">📊 Εξαγωγή σε Excel (.csv)</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="home" onclick="switchView('home')"><span class="ico">🏠</span>Αρχική</button>
+    <button class="nav-btn" data-view="months" onclick="switchView('months')"><span class="ico">📅</span>Μήνες</button>
+    <button class="nav-btn" data-view="history" onclick="switchView('history')"><span class="ico">🔍</span>Κινήσεις</button>
+    <button class="nav-btn" data-view="customers" onclick="switchView('customers')"><span class="ico">👥</span>Πελάτες</button>
+    <button class="nav-btn" data-view="more" onclick="switchView('more')"><span class="ico">📍</span>Προορισμοί</button>
+  </nav>
+
+  <div class="modal-backdrop" id="txModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="modalTitle">Νέα Καταχώρηση</span>
+        <button class="mini-btn" onclick="closeModal()">✕</button>
+      </div>
+      <form id="txForm" onsubmit="saveTransaction(event)">
+        <input type="hidden" id="txId" />
+        <input type="hidden" id="txType" />
+
+        <label class="field-lbl">Ημερομηνία</label>
+        <input type="date" id="txDate" class="input-field" required />
+
+        <div id="incomeFields">
+          <label class="field-lbl">Πελάτης (Προαιρετικό)</label>
+          <input type="text" id="txCustomer" list="customersDatalist" class="input-field" placeholder="π.χ. Κωνσταντίνος ή Τυχαίος" />
+          <datalist id="customersDatalist"></datalist>
+
+          <label class="field-lbl">Προορισμός / Δρομολόγιο</label>
+          <input type="text" id="txDestination" list="destinationsDatalist" class="input-field" placeholder="π.χ. Αεροδρόμιο Μακεδονία" />
+          <datalist id="destinationsDatalist"></datalist>
+        </div>
+
+        <div id="expenseFields" style="display:none;">
+          <label class="field-lbl">Κατηγορία Εξόδου</label>
+          <input type="text" id="txCategory" class="input-field" placeholder="π.χ. Καύσιμα, Σέρβις, Ασφάλεια, ΚΤΕΟ" />
+        </div>
+
+        <label class="field-lbl">Ποσό (€)</label>
+        <input type="number" step="0.01" min="0" id="txAmount" class="input-field" placeholder="0.00" required />
+
+        <label class="field-lbl">Σημειώσεις</label>
+        <input type="text" id="txNotes" class="input-field" placeholder="Επιπλέον λεπτομέρειες..." />
+
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:6px;">Αποθήκευση</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="custModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span id="custModalTitle">Πελάτης</span>
+        <button class="mini-btn" onclick="document.getElementById('custModal').classList.remove('open')">✕</button>
+      </div>
+      <div id="custModalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'taxipro_transactions_v1';
+    const THEME_KEY = 'taxipro_theme_v1';
+    const MONTHS_GR = [
+      'Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος',
+      'Μάιος', 'Ιούνιος', 'Ιούλιος', 'Αύγουστος',
+      'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'
+    ];
+    const MONTHS_SHORT = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μαι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+
+    let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let selectedYear = new Date().getFullYear();
+    let typeFilter = 'all';
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    }
+
+    function fmtMoney(num) {
+      return Number(num || 0).toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'light') document.body.classList.add('light');
+      updateThemeBtn();
+    }
+
+    function updateThemeBtn() {
+      document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      localStorage.setItem(THEME_KEY, document.body.classList.contains('light') ? 'light' : 'dark');
+      updateThemeBtn();
+    });
+
+    function populateYears() {
+      const years = new Set([new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() + 1]);
+      transactions.forEach(t => {
+        if (t.date) years.add(parseInt(t.date.slice(0, 4), 10));
+      });
+      const sorted = Array.from(years).sort((a, b) => b - a);
+      const sel = document.getElementById('yearSelect');
+      sel.innerHTML = sorted.map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>${y}</option>`).join('');
+    }
+
+    document.getElementById('yearSelect').addEventListener('change', (e) => {
+      selectedYear = parseInt(e.target.value, 10);
+      refreshAll();
+    });
+
+    function populateMonthFilter() {
+      const mf = document.getElementById('monthFilter');
+      mf.innerHTML = '<option value="all">Όλοι οι μήνες</option>' +
+        MONTHS_GR.map((m, idx) => `<option value="${String(idx + 1).padStart(2, '0')}">${m}</option>`).join('');
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + viewName).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === viewName);
+      });
+      refreshAll();
+    }
+
+    function getYearTransactions() {
+      return transactions
+        .filter(t => t.date && t.date.startsWith(String(selectedYear)))
+        .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+    }
+
+    function refreshAll() {
+      document.querySelectorAll('.yr-lbl').forEach(el => el.textContent = selectedYear);
+      renderHome();
+      renderMonths();
+      renderHistory();
+      renderCustomers();
+      renderDestinations();
+      updateDatalists();
+    }
+
+    function renderTxRow(t) {
+      const isInc = t.type === 'income';
+      const title = isInc
+        ? `${t.destination || 'Δρομολόγιο'}${t.customer ? ' • ' + t.customer : ''}`
+        : `${t.category || 'Έξοδο'}`;
+      const sub = `${fmtDate(t.date)}${t.notes ? ' — ' + t.notes : ''}`;
+      return `
+        <div class="tx-item">
+          <div>
+            <div class="tx-main">${escapeHtml(title)}</div>
+            <div class="tx-sub">${escapeHtml(sub)}</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount ${isInc ? 'green' : 'red'}">${isInc ? '+' : '-'}${fmtMoney(t.amount)}</div>
+            <div class="tx-actions">
+              <button class="mini-btn" onclick="editTx(${t.id})">Επεξ.</button>
+              <button class="mini-btn" onclick="deleteTx(${t.id})">Διαγρ.</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHome() {
+      const yrTx = getYearTransactions();
+      let inc = 0, exp = 0;
+      const monthlyInc = Array(12).fill(0);
+      const monthlyExp = Array(12).fill(0);
+
+      yrTx.forEach(t => {
+        const mIdx = parseInt(t.date.slice(5, 7), 10) - 1;
+        const val = Number(t.amount) || 0;
+        if (t.type === 'income') {
+          inc += val;
+          if (mIdx >= 0 && mIdx < 12) monthlyInc[mIdx] += val;
+        } else {
+          exp += val;
+          if (mIdx >= 0 && mIdx < 12) monthlyExp[mIdx] += val;
+        }
+      });
+
+      document.getElementById('kpiIncome').textContent = fmtMoney(inc);
+      document.getElementById('kpiExpense').textContent = fmtMoney(exp);
+      const profit = inc - exp;
+      const profitEl = document.getElementById('kpiProfit');
+      profitEl.textContent = fmtMoney(profit);
+      profitEl.className = 'kpi-val ' + (profit >= 0 ? 'accent' : 'red');
+
+      const maxVal = Math.max(1, ...monthlyInc, ...monthlyExp);
+      document.getElementById('yearChart').innerHTML = MONTHS_SHORT.map((m, i) => {
+        const hInc = Math.round((monthlyInc[i] / maxVal) * 88);
+        const hExp = Math.round((monthlyExp[i] / maxVal) * 88);
+        return `
+          <div class="bar-col" onclick="openMonthHistory(${i + 1})">
+            <div class="bar-pair">
+              <div class="bar inc" style="height:${hInc}px" title="Έσοδα: ${fmtMoney(monthlyInc[i])}"></div>
+              <div class="bar exp" style="height:${hExp}px" title="Έξοδα: ${fmtMoney(monthlyExp[i])}"></div>
+            </div>
+            <div class="bar-lbl">${m}</div>
+          </div>
+        `;
+      }).join('');
+
+      const recent = yrTx.slice(0, 5);
+      document.getElementById('recentList').innerHTML = recent.length
+        ? recent.map(renderTxRow).join('')
+        : '<div class="empty-state">Δεν υπάρχουν καταχωρήσεις για το ' + selectedYear + '.</div>';
+    }
+
+    function openMonthHistory(monthNum) {
+      document.getElementById('monthFilter').value = String(monthNum).padStart(2, '0');
+      switchView('history');
+    }
+
+    function renderMonths() {
+      const yrTx = getYearTransactions();
+      const grid = document.getElementById('monthsGrid');
+      grid.innerHTML = MONTHS_GR.map((name, idx) => {
+        const mStr = String(idx + 1).padStart(2, '0');
+        const mTx = yrTx.filter(t => t.date.slice(5, 7) === mStr);
+        const inc = mTx.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+        const exp = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+        const net = inc - exp;
+        return `
+          <div class="month-card" onclick="openMonthHistory(${idx + 1})">
+            <div class="month-name">${name}</div>
+            <div class="month-row"><span>Έσοδα:</span><span class="green">${fmtMoney(inc)}</span></div>
+            <div class="month-row"><span>Έξοδα:</span><span class="red">${fmtMoney(exp)}</span></div>
+            <div class="month-row" style="margin-top:5px;padding-top:4px;border-top:1px solid var(--border);font-weight:700;">
+              <span>Καθαρό:</span><span class="${net >= 0 ? 'accent' : 'red'}">${fmtMoney(net)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setTypeFilter(type, btn) {
+      typeFilter = type;
+      document.querySelectorAll('.filter-row .pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const mVal = document.getElementById('monthFilter').value;
+      let list = getYearTransactions();
+
+      if (typeFilter !== 'all') list = list.filter(t => t.type === typeFilter);
+      if (mVal !== 'all') list = list.filter(t => t.date.slice(5, 7) === mVal);
+      if (q) {
+        list = list.filter(t =>
+          (t.customer || '').toLowerCase().includes(q) ||
+          (t.destination || '').toLowerCase().includes(q) ||
+          (t.category || '').toLowerCase().includes(q) ||
+          (t.notes || '').toLowerCase().includes(q) ||
+          String(t.amount).includes(q)
+        );
+      }
+
+      document.getElementById('historyList').innerHTML = list.length
+        ? list.map(renderTxRow).join('')
+        : '<div class="empty-state">Δεν βρέθηκαν κινήσεις με αυτά τα κριτήρια.</div>';
+    }
+
+    function renderCustomers() {
+      const q = (document.getElementById('customerSearch').value || '').trim().toLowerCase();
+      const map = {};
+      transactions.filter(t => t.type === 'income' && t.customer && t.customer.trim()).forEach(t => {
+        const key = t.customer.trim();
+        if (!map[key]) map[key] = { name: key, count: 0, total: 0, trips: [] };
+        map[key].count++;
+        map[key].total += Number(t.amount) || 0;
+        map[key].trips.push(t);
+      });
+
+      let arr = Object.values(map).sort((a, b) => b.count - a.count || b.total - a.total);
+      if (q) arr = arr.filter(c => c.name.toLowerCase().includes(q));
+
+      document.getElementById('customersList').innerHTML = arr.length
+        ? arr.map(c => `
+          <div class="card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="showCustomerModal('${escapeAttr(c.name)}')">
+            <div>
+              <div style="font-weight:800;font-size:15px;">${escapeHtml(c.name)}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px;">${c.count} διαδρομές • Τζίρος: <strong class="green">${fmtMoney(c.total)}</strong></div>
+            </div>
+            <span class="badge-count">${c.count}x</span>
+          </div>
+        `).join('')
+        : '<div class="card empty-state">Δεν υπάρχουν καταχωρημένοι πελάτες ακόμα.</div>';
+    }
+
+    function showCustomerModal(name) {
+      const trips = transactions
+        .filter(t => t.type === 'income' && (t.customer || '').trim() === name)
+        .sort((a, b) => b.date.localeCompare(a.date));
+      document.getElementById('custModalTitle').textContent = name + ` (${trips.length} διαδρομές)`;
+      document.getElementById('custModalBody').innerHTML = trips.map(t => `
+        <div class="tx-item">
+          <div>
+            <div class="tx-main">${escapeHtml(t.destination || 'Δρομολόγιο')}</div>
+            <div class="tx-sub">${fmtDate(t.date)}${t.notes ? ' — ' + escapeHtml(t.notes) : ''}</div>
+          </div>
+          <div class="tx-amount green">${fmtMoney(t.amount)}</div>
+        </div>
+      `).join('');
+      document.getElementById('custModal').classList.add('open');
+    }
+
+    function renderDestinations() {
+      const q = (document.getElementById('destSearch').value || '').trim().toLowerCase();
+      const map = {};
+      transactions.filter(t => t.type === 'income' && t.destination && t.destination.trim()).forEach(t => {
+        const key = t.destination.trim();
+        if (!map[key]) map[key] = { name: key, count: 0, total: 0 };
+        map[key].count++;
+        map[key].total += Number(t.amount) || 0;
+      });
+
+      let arr = Object.values(map).sort((a, b) => b.count - a.count || b.total - a.total);
+      if (q) arr = arr.filter(d => d.name.toLowerCase().includes(q));
+
+      document.getElementById('destinationsList').innerHTML = arr.length
+        ? arr.map(d => `
+          <div class="tx-item">
+            <div>
+              <div class="tx-main">${escapeHtml(d.name)}</div>
+              <div class="tx-sub">Συνολικά έσοδα: ${fmtMoney(d.total)}</div>
+            </div>
+            <span class="badge-count">${d.count} επισκέψεις</span>
+          </div>
+        `).join('')
+        : '<div class="empty-state">Δεν υπάρχουν καταχωρημένοι προορισμοί ακόμα.</div>';
+    }
+
+    function updateDatalists() {
+      const customers = [...new Set(transactions.map(t => (t.customer || '').trim()).filter(Boolean))];
+      const dests = [...new Set(transactions.map(t => (t.destination || '').trim()).filter(Boolean))];
+      document.getElementById('customersDatalist').innerHTML = customers.map(c => `<option value="${escapeAttr(c)}">`).join('');
+      document.getElementById('destinationsDatalist').innerHTML = dests.map(d => `<option value="${escapeAttr(d)}">`).join('');
+    }
+
+    function openModal(type, existing = null) {
+      document.getElementById('txType').value = type;
+      document.getElementById('txId').value = existing ? existing.id : '';
+      document.getElementById('modalTitle').textContent = existing
+        ? 'Επεξεργασία Κίνησης'
+        : (type === 'income' ? 'Νέο Δρομολόγιο' : 'Νέο Έξοδο');
+
+      document.getElementById('incomeFields').style.display = type === 'income' ? 'block' : 'none';
+      document.getElementById('expenseFields').style.display = type === 'expense' ? 'block' : 'none';
+
+      document.getElementById('txDate').value = existing ? existing.date : new Date().toISOString().slice(0, 10);
+      document.getElementById('txCustomer').value = existing ? (existing.customer || '') : '';
+      document.getElementById('txDestination').value = existing ? (existing.destination || '') : '';
+      document.getElementById('txCategory').value = existing ? (existing.category || '') : '';
+      document.getElementById('txAmount').value = existing ? existing.amount : '';
+      document.getElementById('txNotes').value = existing ? (existing.notes || '') : '';
+
+      document.getElementById('txModal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('txModal').classList.remove('open');
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('txId').value;
+      const type = document.getElementById('txType').value;
+      const record = {
+        id: idVal ? Number(idVal) : Date.now(),
+        type,
+        date: document.getElementById('txDate').value,
+        customer: type === 'income' ? document.getElementById('txCustomer').value.trim() : '',
+        destination: type === 'income' ? document.getElementById('txDestination').value.trim() : '',
+        category: type === 'expense' ? document.getElementById('txCategory').value.trim() : '',
+        amount: parseFloat(document.getElementById('txAmount').value),
+        notes: document.getElementById('txNotes').value.trim()
+      };
+
+      if (idVal) {
+        const idx = transactions.findIndex(t => t.id === record.id);
+        if (idx !== -1) transactions[idx] = record;
+      } else {
+        transactions.push(record);
+      }
+
+      selectedYear = parseInt(record.date.slice(0, 4), 10);
+      saveToStorage();
+      populateYears();
+      closeModal();
+      refreshAll();
+    }
+
+    function editTx(id) {
+      const tx = transactions.find(t => t.id === id);
+      if (tx) openModal(tx.type, tx);
+    }
+
+    function deleteTx(id) {
+      if (!confirm('Διαγραφή αυτής της κίνησης;')) return;
+      transactions = transactions.filter(t => t.id !== id);
+      saveToStorage();
+      populateYears();
+      refreshAll();
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `TaxiPro_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!Array.isArray(parsed)) throw new Error();
+          if (confirm(`Βρέθηκαν ${parsed.length} εγγραφές. Θέλεις να αντικαταστήσεις τα τρέχοντα δεδομένα;`)) {
+            transactions = parsed;
+            saveToStorage();
+            populateYears();
+            refreshAll();
+            alert('Η επαναφορά ολοκληρώθηκε!');
+          }
+        } catch {
+          alert('Μη έγκυρο αρχείο αντιγράφου ασφαλείας.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function exportCSV() {
+      const headers = ['Ημερομηνία', 'Τύπος', 'Πελάτης', 'Προορισμός/Κατηγορία', 'Ποσό (€)', 'Σημειώσεις'];
+      const rows = transactions.map(t => [
+        t.date,
+        t.type === 'income' ? 'Έσοδο' : 'Έξοδο',
+        t.customer || '',
+        t.type === 'income' ? (t.destination || '') : (t.category || ''),
+        String(t.amount).replace('.', ','),
+        t.notes || ''
+      ]);
+      const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `TaxiPro_Kiniseis_${selectedYear}.csv`;
+      a.click();
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+    function escapeAttr(str) {
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    }
+    initTheme();
+    populateYears();
+    populateMonthFilter();
+    refreshAll();
+  </script>
+</body>
+</html>
